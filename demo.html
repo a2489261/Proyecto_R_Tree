@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<!-- Declara que este es un documento HTML5 -->
+<html lang="es">
+<!-- Elemento raíz del documento, especifica que el idioma es español -->
+<head>
+    <!-- Cabecera del documento - contiene metadatos y enlaces a recursos externos -->
+    <meta charset="UTF-8">
+    <!-- Especifica la codificación de caracteres como UTF-8 para soportar caracteres internacionales -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Configura la vista para dispositivos móviles - asegura que el ancho coincida con el dispositivo y sin zoom inicial -->
+    <title>Demo Visual R-tree</title>
+    <!-- Título que aparece en la pestaña del navegador -->
+    <link rel = "stylesheet" href = "css/style.css">
+    <!-- Enlace al archivo CSS que contiene los estilos visuales de la aplicación -->
+</head>
+<body>
+    <!-- Cuerpo del documento - contiene todo el contenido visible -->
+    <div class="container">
+        <!-- Contenedor principal que agrupa toda la interfaz -->
+        <h1>Demo Visual R-tree</h1>
+        <!-- Título principal de la aplicación -->
+        <div class="content">
+            <!-- División para el contenido principal, organiza la disposición de elementos -->
+            <div class="canvas-container">
+                <!-- Contenedor específico para el área de dibujo (canvas) y su leyenda -->
+                <canvas id="rtreeCanvas" width="800" height="600"></canvas>
+                <!-- Elemento canvas donde se dibujará visualmente el R-tree y las operaciones -->
+                <div class="legend">
+                    <!-- Leyenda que explica el significado de los colores usados en la visualización -->
+                    <div class="legend-item">
+                        <!-- Elemento individual de la leyenda -->
+                        <div class="legend-color" style="background-color: #e63946;"></div>
+                        <!-- Cuadro de color representativo -->
+                        <span>Puntos normales</span>
+                        <!-- Descripción del color -->
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #2a9d8f;"></div>
+                        <span>Puntos encontrados (Búsqueda)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #9d4edd;"></div>
+                        <span>K-NN más cercanos</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #ff6b6b;"></div>
+                        <span>Punto de consulta K-NN</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #e9c46a;"></div>
+                        <span>Rectángulos R-tree</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <!-- Panel lateral que contiene todos los controles e información de la aplicación -->
+                <div class="control-group">
+                    <!-- Grupo de controles relacionados -->
+                    <h2>Controles</h2>
+                    <!-- Subtítulo para el grupo de controles -->
+                    <button id="insertPoint" class="btn btn-success">Insertar Punto (Click)</button>
+                    <!-- Botón para activar el modo de inserción de puntos -->
+                    <button id="searchArea" class="btn">Buscar por Área (Drag)</button>
+                    <!-- Botón para activar la búsqueda por área rectangular -->
+                    <button id="knnSearch" class="btn btn-warning">Búsqueda K-NN (Click)</button>
+                    <!-- Botón para activar la búsqueda de K vecinos más cercanos -->
+                    <button id="clearSearch" class="btn">Limpiar Búsqueda</button>
+                    <!-- Botón para limpiar los resultados de búsqueda actuales -->
+                    <button id="clearAll" class="btn btn-danger">Limpiar Todo</button>
+                    <!-- Botón para eliminar todos los puntos y reiniciar el R-tree -->
+                </div>
+                
+                <div class="control-group">
+                    <h2>Configuración K-NN</h2>
+                    <!-- Grupo específico para configurar la búsqueda K-NN -->
+                    <div class="knn-controls">
+                        <!-- Controles para ajustar el parámetro K -->
+                        <label>Valor de K:</label>
+                        <!-- Etiqueta descriptiva -->
+                        <input type="number" id="kValue" value="5" min="1" max="50">
+                        <!-- Campo para especificar cuántos vecinos buscar (K) -->
+                    </div>
+
+                    <div class="distance-info" id="knnDistances">
+                        <!-- Área que mostrará información sobre distancias en búsquedas K-NN -->
+                        Haga clic en "Búsqueda K-NN" y luego en el canvas
+                        <!-- Mensaje instructivo inicial -->
+                    </div>
+                    <div class="performance-info" id="performanceInfo">
+                        <!-- Área para mostrar información de rendimiento -->
+                        Estado: Listo
+                        <!-- Estado inicial de la aplicación -->
+                    </div>
+                    <div class="debug-info" id="debugInfo">
+                        <!-- Área para información de depuración (útil para desarrolladores) -->
+                        Información de depuración aparecerá aquí
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h2>Búsqueda por Área</h2>
+                    <!-- Grupo para información sobre búsqueda por área -->
+                    <div class="distance-info" id="areaSearchInfo">
+                        <!-- Área que mostrará información sobre búsquedas por área -->
+                        Arrastre para definir área de búsqueda
+                        <!-- Instrucción para el usuario -->
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h2>Configuración R-tree</h2>
+                    <!-- Grupo para configurar parámetros del R-tree -->
+                    <div>
+                        <label>Máx. entradas por nodo: </label>
+                        <!-- Etiqueta para el máximo de elementos por nodo -->
+                        <input type="number" id="maxEntries" value="4" min="2" max="10">
+                        <!-- Control para establecer el máximo de elementos por nodo del R-tree -->
+                    </div>
+                    <div>
+                        <label>Mín. entradas por nodo: </label>
+                        <!-- Etiqueta para el mínimo de elementos por nodo -->
+                        <input type="number" id="minEntries" value="2" min="1" max="5">
+                        <!-- Control para establecer el mínimo de elementos por nodo del R-tree -->
+                    </div>
+                    <button id="rebuildTree" class="btn">Reconstruir R-tree</button>
+                    <!-- Botón para reconstruir el R-tree con los nuevos parámetros -->
+                </div>
+                
+                <div class="stats">
+                    <!-- Sección de estadísticas que muestra información numérica sobre el R-tree -->
+                    <div class="stat-card">
+                        <!-- Tarjeta individual de estadística -->
+                        <div>Puntos insertados</div>
+                        <!-- Descripción de la estadística -->
+                        <div id="pointsCount" class="stat-value">0</div>
+                        <!-- Valor actual de la estadística (se actualizará dinámicamente) -->
+                    </div>
+                    <div class="stat-card">
+                        <div>Nodos R-tree</div>
+                        <div id="nodesCount" class="stat-value">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>Nivel máximo</div>
+                        <div id="maxLevel" class="stat-value">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>Puntos encontrados</div>
+                        <div id="foundCount" class="stat-value">0</div>
+                    </div>
+                </div>
+                
+                <div class="search-results">
+                    <!-- Sección para mostrar resultados detallados de las búsquedas -->
+                    <h2>Resultados de Búsqueda</h2>
+                    <div id="resultsInfo">Realice una búsqueda para ver los resultados</div>
+                    <!-- Área donde se mostrarán los resultados de búsqueda -->
+                </div>
+                
+                <div class="tree-visualization">
+                    <!-- Sección para mostrar la estructura textual del R-tree -->
+                    <h2>Estructura del R-tree</h2>
+                    <div id="treeStructure">El árbol está vacío</div>
+                    <!-- Área donde se mostrará la representación textual del R-tree -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <!-- Sección de instrucciones para el usuario -->
+            <h2>Instrucciones de Uso</h2>
+            <ul>
+                <!-- Lista de instrucciones -->
+                <li><span class="highlight">Insertar puntos:</span> Haga clic en el botón "Insertar Punto" y luego haga clic en el área del canvas para agregar puntos.</li>
+                <!-- Instrucción para insertar puntos -->
+                <li><span class="highlight">Búsqueda por área:</span> Haga clic en el botón "Buscar por Área", luego arrastre en el canvas para definir un rectángulo de búsqueda.</li>
+                <!-- Instrucción para búsqueda por área rectangular -->
+                <li><span class="highlight">Búsqueda K-NN:</span> Haga clic en el botón "Búsqueda K-NN", luego haga clic en cualquier lugar del canvas para encontrar los K puntos más cercanos.</li>
+                <!-- Instrucción para búsqueda de K vecinos más cercanos -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Inclusión de scripts JavaScript que implementan la funcionalidad -->
+    <script src = "js/figures/rectangle.js"></script>
+    <!-- Script que define la clase Rectangle para representar rectángulos -->
+    <script src = "js/figures/point.js"></script>
+    <!-- Script que define la clase Point para representar puntos en el espacio 2D -->
+    <script src = "js/r_tree/r_tree_node.js"></script>
+    <!-- Script que define la clase RTreeNode para los nodos del R-tree -->
+    <script src = "js/r_tree/r_tree.js"></script>
+    <!-- Script que implementa la lógica principal del R-tree (inserción, búsqueda, etc.) -->
+    <script src = "js/r_tree/r_tree_visualizer.js"></script>
+    <!-- Script que maneja la visualización del R-tree en el canvas y la interacción del usuario -->
+    <script>
+        // Script inline que se ejecuta cuando el documento HTML está completamente cargado
+        document.addEventListener('DOMContentLoaded', () => {
+            // Crea una instancia del visualizador del R-tree cuando el documento está listo
+            new RTreeVisualizer();
+        });
+    </script>
+</body>
+</html>
