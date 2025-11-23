@@ -184,7 +184,3 @@ Las contribuciones son bienvenidas para:
 ## 📄 Licencia
 
 Este proyecto está disponible para fines educativos y de investigación.
-
----
-
-**¿Preguntas o comentarios?** ¡Experimenta con diferentes configuraciones y observa cómo cambia la estructura del árbol! 🌟
